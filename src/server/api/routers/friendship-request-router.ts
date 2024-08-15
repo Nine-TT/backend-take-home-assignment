@@ -169,6 +169,7 @@ export const friendshipRequestRouter = router({
        * Documentation references:
        *  - https://vitest.dev/api/#test-skip
        */
+
       await ctx.db
         .updateTable('friendships')
         .set({ status: FriendshipStatusSchema.Values['declined'] })
