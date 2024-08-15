@@ -79,14 +79,31 @@ export const friendshipRequestRouter = router({
        * scenario for Question 3
        *  - Run `yarn test` to verify your answer
        */
-      return ctx.db
-        .insertInto('friendships')
-        .values({
-          userId: ctx.session.userId,
-          friendUserId: input.friendUserId,
-          status: FriendshipStatusSchema.Values['requested'],
-        })
-        .execute()
+
+      const existRequest = await ctx.db
+        .selectFrom('friendships')
+        .selectAll()
+        .where('userId', '=', ctx.session.userId)
+        .where('friendUserId', '=', input.friendUserId)
+        .executeTakeFirst()
+
+      if (existRequest) {
+        await ctx.db
+          .updateTable('friendships')
+          .set({ status: FriendshipStatusSchema.Values['requested'] })
+          .where('userId', '=', ctx.session.userId)
+          .where('friendUserId', '=', input.friendUserId)
+          .execute()
+      } else {
+        await ctx.db
+          .insertInto('friendships')
+          .values({
+            userId: ctx.session.userId,
+            friendUserId: input.friendUserId,
+            status: FriendshipStatusSchema.Values['requested'],
+          })
+          .execute()
+      }
     }),
 
   accept: procedure
